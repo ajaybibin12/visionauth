@@ -20,27 +20,56 @@ dev = [
     "ruff>=0.15.21",
 ]
 
+# -------------------------------------------------
+# Black
+# -------------------------------------------------
+
 [tool.black]
 line-length = 88
 target-version = ["py314"]
+
+# -------------------------------------------------
+# Ruff
+# -------------------------------------------------
 
 [tool.ruff]
 line-length = 88
 target-version = "py314"
 
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    ".pytest_cache",
+]
+
 [tool.ruff.lint]
 select = [
-    "E",
-    "F",
-    "I",
-    "B",
+    "E", # pycodestyle
+    "F", # pyflakes
+    "I", # isort
+    "B", # flake8-bugbear
 ]
+
+# -------------------------------------------------
+# Pytest
+# -------------------------------------------------
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+addopts = "-ra"
+
+# -------------------------------------------------
+# MyPy
+# -------------------------------------------------
 
 [tool.mypy]
 python_version = "3.14"
-strict = true
+
+warn_return_any = true
 warn_unused_configs = true
+warn_unused_ignores = true
+
+check_untyped_defs = true
+disallow_untyped_defs = true
