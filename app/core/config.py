@@ -6,22 +6,23 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application settings."""
 
-    app_name: str
-    app_version: str
+    app_name: str = "VisionAuth"
+    app_version: str = "0.1.0"
 
-    environment: str
+    environment: str = "development"
 
-    debug: bool
+    debug: bool = True
 
-    api_v1_prefix: str
+    api_v1_prefix: str = "/api/v1"
 
-    host: str
+    host: str = "localhost"
 
-    port: int
+    port: int = 8000
 
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
+        extra="ignore",
     )
 
 
