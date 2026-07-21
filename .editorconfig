@@ -8,5 +8,6 @@ indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
 
-[*.md]
+[*.{bat,cmd}]
 trim_trailing_whitespace = false
+end_of_line = crlf
