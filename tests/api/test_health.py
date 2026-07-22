@@ -1,3 +1,4 @@
+from app.core.config import settings
 from tests.conftest import client
 
 
@@ -42,4 +43,4 @@ def test_health_contains_environment():
 
     data = response.json()
 
-    assert data["environment"] == "development"
+    assert data["environment"] == settings.environment
