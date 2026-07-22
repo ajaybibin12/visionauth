@@ -19,6 +19,16 @@ class Settings(BaseSettings):
 
     port: int = 8000
 
+    postgres_host: str = "localhost"
+    postgres_port: int = 5432
+    postgres_db: str = "visionauth"
+    postgres_user: str = "postgres"
+    postgres_password: str = "postgres"
+
+    database_url: str = (
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/visionauth"
+    )
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
