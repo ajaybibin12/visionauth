@@ -1,8 +1,7 @@
 from app.core.config import settings
-from tests.conftest import client
 
 
-def test_health_endpoint_returns_200():
+def test_health_endpoint_returns_200(client):
     """Health endpoint should return HTTP 200."""
 
     response = client.get("/api/v1/health")
@@ -10,7 +9,7 @@ def test_health_endpoint_returns_200():
     assert response.status_code == 200
 
 
-def test_health_status():
+def test_health_status(client):
     """Health endpoint should return healthy status."""
 
     response = client.get("/api/v1/health")
@@ -20,7 +19,7 @@ def test_health_status():
     assert data["status"] == "healthy"
 
 
-def test_health_contains_application_name():
+def test_health_contains_application_name(client):
     """Application name should be returned."""
 
     response = client.get("/api/v1/health")
@@ -30,7 +29,7 @@ def test_health_contains_application_name():
     assert data["application"] == "VisionAuth"
 
 
-def test_health_contains_version():
+def test_health_contains_version(client):
     response = client.get("/api/v1/health")
 
     data = response.json()
@@ -38,7 +37,7 @@ def test_health_contains_version():
     assert data["version"] == "0.1.0"
 
 
-def test_health_contains_environment():
+def test_health_contains_environment(client):
     response = client.get("/api/v1/health")
 
     data = response.json()
