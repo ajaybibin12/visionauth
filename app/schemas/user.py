@@ -38,7 +38,7 @@ class UserRead(TimestampedSchema):
 class UserList(TimestampedSchema):
     """Schema for listing users."""
 
-    user: list[UserRead] = []
+    users: list[UserRead] = Field(default_factory=list)
 
 
 class UserResponse(TimestampedSchema):

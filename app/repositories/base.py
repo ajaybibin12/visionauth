@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Generic, TypeVar
 
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.base import Base
@@ -25,9 +26,13 @@ class BaseRepository(Generic[ModelType]):
         """Create a new database record."""
 
         self.session.add(obj)
-        await self.session.commit()
-        await self.session.refresh(obj)
-        return obj
+        try:
+            await self.session.commit()
+            await self.session.refresh(obj)
+            return obj
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
 
     async def get_by_id(self, obj_id: Any) -> ModelType | None:
         """Return an object by primary key."""
@@ -44,9 +49,16 @@ class BaseRepository(Generic[ModelType]):
         """Delete a database record."""
 
         await self.session.delete(obj)
-        await self.session.commit()
+        try:
+            await self.session.commit()
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
 
     async def update(self) -> None:
         """Commit pending changes."""
-
-        await self.session.commit()
+        try:
+            await self.session.commit()
+        except SQLAlchemyError:
+            await self.session.rollback()
+            raise
