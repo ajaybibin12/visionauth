@@ -43,7 +43,11 @@ jobs:
       HOST: 127.0.0.1
       PORT: 8000
 
+      # Application database
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/visionauth_test
+
+      # Test database
+      TEST_DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/visionauth_test
 
     steps:
       - name: Checkout Repository

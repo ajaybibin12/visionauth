@@ -8,15 +8,12 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from app.core.config import settings
 from app.db.base import Base
 from app.main import app
 
-TEST_DATABASE_URL = (
-    "postgresql+asyncpg://postgres:VisionAuth12@localhost:5432/visionauth_test"
-)
-
 engine = create_async_engine(
-    TEST_DATABASE_URL,
+    settings.test_database_url,
     future=True,
     poolclass=NullPool,
 )
