@@ -1,14 +1,14 @@
-class UserAlreadyExistsError(Exception):
-    """Raised when a user already exists."""
+class UserError(Exception):
+    """Base exception for user errors."""
 
 
-class EmployeeIDAlreadyExistsError(Exception):
+class UserAlreadyExistsError(UserError):
+    """Raised when a user with the same email already exists."""
+
+
+class EmployeeIDAlreadyExistsError(UserError):
     """Raised when an employee ID already exists."""
 
 
-class UserNotFoundError(Exception):
+class UserNotFoundError(UserError):
     """Raised when a user cannot be found."""
-
-
-class UserError(Exception):
-    """Base exception for all user-related errors."""

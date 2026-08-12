@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import (
 
 from app.core.config import settings
 from app.db.base import Base
+from app.db.session import get_session
 from app.main import app
 
 engine = create_async_engine(
@@ -25,12 +26,25 @@ TestingSessionLocal = async_sessionmaker(
 )
 
 
+async def override_get_session():
+    """Provide a test database session to the application."""
+
+    async with TestingSessionLocal() as session:
+        yield session
+
+
+app.dependency_overrides[get_session] = override_get_session
+
+
 @pytest_asyncio.fixture(autouse=True)
 async def setup_database():
-    """Create tables before each test and clean them afterwards."""
+    """Reset database state before and after each test."""
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        for table in reversed(Base.metadata.sorted_tables):
+            await conn.execute(table.delete())
 
     yield
 

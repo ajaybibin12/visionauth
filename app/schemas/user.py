@@ -41,7 +41,7 @@ class UserList(TimestampedSchema):
     users: list[UserRead] = Field(default_factory=list)
 
 
-class UserResponse(TimestampedSchema):
+class UserResponse(BaseSchema):
     """Wrapper schema for user response."""
 
     user: UserRead
