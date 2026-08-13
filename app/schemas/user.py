@@ -35,7 +35,7 @@ class UserRead(TimestampedSchema):
     is_active: bool
 
 
-class UserList(TimestampedSchema):
+class UserList(BaseSchema):
     """Schema for listing users."""
 
     users: list[UserRead] = Field(default_factory=list)

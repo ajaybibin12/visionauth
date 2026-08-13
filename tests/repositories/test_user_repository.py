@@ -60,3 +60,30 @@ async def test_get_by_employee_id(db_session):
 
     assert found is not None
     assert found.employee_id == employee_id
+
+
+async def test_list_users(db_session):
+    """Repository should return all users."""
+
+    user_1 = User(
+        employee_id="EMP-001",
+        email="john@example.com",
+        full_name="John Doe",
+    )
+
+    user_2 = User(
+        employee_id="EMP-002",
+        email="jane@example.com",
+        full_name="Jane Doe",
+    )
+
+    db_session.add_all([user_1, user_2])
+    await db_session.commit()
+
+    repository = UserRepository(db_session)
+
+    users = await repository.list()
+
+    assert len(users) == 2
+    assert users[0].employee_id == "EMP-001"
+    assert users[1].employee_id == "EMP-002"

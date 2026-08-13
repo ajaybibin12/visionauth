@@ -12,6 +12,8 @@ from app.core.config import settings
 from app.db.base import Base
 from app.db.session import get_session
 from app.main import app
+from app.models.user import User
+from app.repositories.user import UserRepository
 
 engine = create_async_engine(
     settings.test_database_url,
@@ -60,6 +62,33 @@ async def db_session():
     async with TestingSessionLocal() as session:
         yield session
         await session.rollback()
+
+
+@pytest_asyncio.fixture
+async def user_repository(
+    db_session: AsyncSession,
+) -> UserRepository:
+    """Provide a user repository for service tests."""
+
+    return UserRepository(db_session)
+
+
+@pytest_asyncio.fixture
+async def user(db_session: AsyncSession) -> User:
+    """Create and return a test user."""
+
+    test_user = User(
+        employee_id="EMP001",
+        email="test@example.com",
+        full_name="Test User",
+        is_active=True,
+    )
+
+    db_session.add(test_user)
+    await db_session.commit()
+    await db_session.refresh(test_user)
+
+    return test_user
 
 
 @pytest.fixture
