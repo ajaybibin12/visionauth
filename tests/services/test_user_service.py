@@ -1,4 +1,4 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -241,3 +241,36 @@ async def test_update_user_duplicate_employee_id(db_session):
             user_1.id,
             UserUpdate(employee_id="EMP-002"),
         )
+
+
+async def test_delete_user(db_session):
+    """Test deleting an existing user."""
+
+    repository = UserRepository(db_session)
+    service = UserService(repository)
+
+    user = User(
+        employee_id="EMP-DELETE-001",
+        email="delete@example.com",
+        full_name="Delete User",
+    )
+
+    created_user = await repository.create(user)
+
+    await service.delete_user(created_user.id)
+
+    deleted_user = await repository.get_by_id(created_user.id)
+
+    assert deleted_user is None
+
+
+async def test_delete_user_not_found(db_session):
+    """Test deleting a user that does not exist."""
+
+    repository = UserRepository(db_session)
+    service = UserService(repository)
+
+    user_id = UUID("00000000-0000-0000-0000-000000000000")
+
+    with pytest.raises(UserNotFoundError):
+        await service.delete_user(user_id)

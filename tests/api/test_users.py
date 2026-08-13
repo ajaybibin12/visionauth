@@ -303,3 +303,41 @@ def test_update_user_partial_update(client):
     assert data["email"] == "john@example.com"
     assert data["full_name"] == "John Updated"
     assert data["is_active"] is True
+
+
+def test_delete_user(client, db_session):
+    """Test deleting an existing user."""
+
+    create_response = client.post(
+        "/api/v1/users/",
+        json={
+            "employee_id": "EMP-DELETE-001",
+            "email": "delete@example.com",
+            "full_name": "Delete User",
+        },
+    )
+
+    assert create_response.status_code == 201
+
+    user_id = create_response.json()["user"]["id"]
+
+    response = client.delete(f"/api/v1/users/{user_id}")
+
+    assert response.status_code == 204
+    assert response.content == b""
+
+    # Verify the user no longer exists
+    get_response = client.get(f"/api/v1/users/{user_id}")
+
+    assert get_response.status_code == 404
+
+
+def test_delete_user_not_found(client):
+    """Test deleting a user that does not exist."""
+
+    user_id = "00000000-0000-0000-0000-000000000000"
+
+    response = client.delete(f"/api/v1/users/{user_id}")
+
+    assert response.status_code == 404
+    assert "not found" in response.json()["detail"].lower()

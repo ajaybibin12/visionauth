@@ -112,3 +112,13 @@ class UserService:
         await self.user_repository.session.refresh(user)
 
         return user
+
+    async def delete_user(self, user_id: UUID) -> None:
+        """Delete a user by ID."""
+
+        user = await self.user_repository.get_by_id(user_id)
+
+        if user is None:
+            raise UserNotFoundError(f"User with ID {user_id} not found.")
+
+        await self.user_repository.delete(user)
