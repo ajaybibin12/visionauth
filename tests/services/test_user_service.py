@@ -7,6 +7,7 @@ from app.exceptions import (
     UserAlreadyExistsError,
 )
 from app.exceptions.user import UserNotFoundError
+from app.models.user import User
 from app.repositories.user import UserRepository
 from app.schemas.user import UserCreate
 from app.services.user_service import UserService
@@ -105,3 +106,31 @@ async def test_get_user_not_found(user_repository):
 
     with pytest.raises(UserNotFoundError):
         await service.get_user(user_id)
+
+
+async def test_get_users(db_session):
+    """Service should return all users."""
+
+    user_1 = User(
+        employee_id="EMP-001",
+        email="john@example.com",
+        full_name="John Doe",
+    )
+
+    user_2 = User(
+        employee_id="EMP-002",
+        email="jane@example.com",
+        full_name="Jane Doe",
+    )
+
+    db_session.add_all([user_1, user_2])
+    await db_session.commit()
+
+    repository = UserRepository(db_session)
+    service = UserService(repository)
+
+    users = await service.get_users()
+
+    assert len(users) == 2
+    assert users[0].employee_id == "EMP-001"
+    assert users[1].employee_id == "EMP-002"

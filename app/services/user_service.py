@@ -59,3 +59,8 @@ class UserService:
             raise UserNotFoundError(f"User with ID {user_id} not found.")
 
         return user
+
+    async def get_users(self) -> list[User]:
+        """List all users."""
+
+        return await self.user_repository.list()

@@ -94,3 +94,49 @@ def test_get_user_not_found(client: TestClient):
 
     assert response.status_code == 404
     assert response.json()["detail"] == f"User with ID {user_id} not found."
+
+
+def test_list_users(client):
+    """GET /users should return all users."""
+
+    client.post(
+        "/api/v1/users/",
+        json={
+            "employee_id": "EMP-001",
+            "email": "john@example.com",
+            "full_name": "John Doe",
+        },
+    )
+
+    client.post(
+        "/api/v1/users/",
+        json={
+            "employee_id": "EMP-002",
+            "email": "jane@example.com",
+            "full_name": "Jane Doe",
+        },
+    )
+
+    response = client.get("/api/v1/users/")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "users" in data
+    assert len(data["users"]) == 2
+
+    assert data["users"][0]["employee_id"] == "EMP-001"
+    assert data["users"][1]["employee_id"] == "EMP-002"
+
+
+def test_list_users_empty(client):
+    """GET /users should return an empty list when no users exist."""
+
+    response = client.get("/api/v1/users/")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["users"] == []

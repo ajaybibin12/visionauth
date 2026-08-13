@@ -8,7 +8,7 @@ from app.exceptions import (
     UserAlreadyExistsError,
     UserNotFoundError,
 )
-from app.schemas.user import UserCreate, UserRead, UserResponse
+from app.schemas.user import UserCreate, UserList, UserRead, UserResponse
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -51,3 +51,13 @@ async def get_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
         ) from exc
+
+
+@router.get("/", response_model=UserList)
+async def list_users(
+    user_service: UserService = Depends(get_user_service),  # noqa: B008
+) -> UserList:
+    """List all users."""
+
+    users = await user_service.get_users()
+    return UserList(users=[UserRead.model_validate(user) for user in users])
