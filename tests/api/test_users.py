@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from fastapi.testclient import TestClient
 
 
@@ -67,3 +69,28 @@ def test_create_user_duplicate_employee_id(client: TestClient):
     response = client.post("/api/v1/users", json=second)
 
     assert response.status_code == 409
+
+
+def test_get_user(client: TestClient, user):
+    response = client.get(f"/api/v1/users/{user.id}")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["user"]["id"] == str(user.id)
+    assert data["user"]["email"] == user.email
+    assert data["user"]["employee_id"] == user.employee_id
+    assert data["user"]["full_name"] == user.full_name
+    assert data["user"]["is_active"] is True
+
+
+def test_get_user_not_found(client: TestClient):
+    """GET /users/{user_id} should return 404 for a missing user."""
+
+    user_id = uuid4()
+
+    response = client.get(f"/api/v1/users/{user_id}")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == f"User with ID {user_id} not found."

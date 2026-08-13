@@ -1,9 +1,12 @@
+from uuid import uuid4
+
 import pytest
 
 from app.exceptions import (
     EmployeeIDAlreadyExistsError,
     UserAlreadyExistsError,
 )
+from app.exceptions.user import UserNotFoundError
 from app.repositories.user import UserRepository
 from app.schemas.user import UserCreate
 from app.services.user_service import UserService
@@ -78,3 +81,27 @@ async def test_create_user_duplicate_employee_id(db_session):
                 full_name="Jane Doe",
             )
         )
+
+
+@pytest.mark.asyncio
+async def test_get_user(user_repository, user):
+    """User service should return a user by ID."""
+
+    service = UserService(user_repository)
+
+    result = await service.get_user(user.id)
+
+    assert result.id == user.id
+    assert result.email == user.email
+    assert result.employee_id == user.employee_id
+
+
+@pytest.mark.asyncio
+async def test_get_user_not_found(user_repository):
+    """User service should raise UserNotFoundError if user does not exist."""
+
+    service = UserService(user_repository)
+    user_id = uuid4()
+
+    with pytest.raises(UserNotFoundError):
+        await service.get_user(user_id)

@@ -1,9 +1,12 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.db.dependencies import get_user_service
 from app.exceptions import (
     EmployeeIDAlreadyExistsError,
     UserAlreadyExistsError,
+    UserNotFoundError,
 )
 from app.schemas.user import UserCreate, UserRead, UserResponse
 from app.services.user_service import UserService
@@ -26,5 +29,25 @@ async def create_user(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(exc),
         ) from exc
-    except EmployeeIDAlreadyExistsError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
+    except EmployeeIDAlreadyExistsError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
+
+
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user(
+    user_id: UUID,
+    user_service: UserService = Depends(get_user_service),  # noqa: B008
+) -> UserResponse:
+    """Get a user by ID."""
+
+    try:
+        user = await user_service.get_user(user_id)
+        return UserResponse(user=UserRead.model_validate(user))
+    except UserNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
