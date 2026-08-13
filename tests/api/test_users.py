@@ -140,3 +140,166 @@ def test_list_users_empty(client):
     data = response.json()
 
     assert data["users"] == []
+
+
+def test_update_user(client):
+    """API should update an existing user."""
+
+    create_response = client.post(
+        "/api/v1/users/",
+        json={
+            "employee_id": "EMP-001",
+            "email": "john@example.com",
+            "full_name": "John Doe",
+        },
+    )
+
+    assert create_response.status_code == 201
+
+    user_id = create_response.json()["user"]["id"]
+
+    response = client.patch(
+        f"/api/v1/users/{user_id}",
+        json={
+            "full_name": "John Updated",
+            "email": "john.updated@example.com",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()["user"]
+
+    assert data["id"] == user_id
+    assert data["employee_id"] == "EMP-001"
+    assert data["email"] == "john.updated@example.com"
+    assert data["full_name"] == "John Updated"
+    assert data["is_active"] is True
+
+
+def test_update_user_not_found(client):
+    """API should return 404 when user does not exist."""
+
+    user_id = "00000000-0000-0000-0000-000000000000"
+
+    response = client.patch(
+        f"/api/v1/users/{user_id}",
+        json={
+            "full_name": "Updated Name",
+        },
+    )
+
+    assert response.status_code == 404
+
+    data = response.json()
+
+    assert "not found" in data["detail"].lower()
+
+
+def test_update_user_duplicate_email(client):
+    """API should return 409 for duplicate email."""
+
+    client.post(
+        "/api/v1/users/",
+        json={
+            "employee_id": "EMP-001",
+            "email": "john@example.com",
+            "full_name": "John Doe",
+        },
+    )
+
+    second_response = client.post(
+        "/api/v1/users/",
+        json={
+            "employee_id": "EMP-002",
+            "email": "jane@example.com",
+            "full_name": "Jane Doe",
+        },
+    )
+
+    assert second_response.status_code == 201
+
+    user_id = second_response.json()["user"]["id"]
+
+    response = client.patch(
+        f"/api/v1/users/{user_id}",
+        json={
+            "email": "john@example.com",
+        },
+    )
+
+    assert response.status_code == 409
+
+    data = response.json()
+
+    assert "already exists" in data["detail"].lower()
+
+
+def test_update_user_duplicate_employee_id(client):
+    """API should return 409 for duplicate employee ID."""
+
+    client.post(
+        "/api/v1/users/",
+        json={
+            "employee_id": "EMP-001",
+            "email": "john@example.com",
+            "full_name": "John Doe",
+        },
+    )
+
+    second_response = client.post(
+        "/api/v1/users/",
+        json={
+            "employee_id": "EMP-002",
+            "email": "jane@example.com",
+            "full_name": "Jane Doe",
+        },
+    )
+
+    assert second_response.status_code == 201
+
+    user_id = second_response.json()["user"]["id"]
+
+    response = client.patch(
+        f"/api/v1/users/{user_id}",
+        json={
+            "employee_id": "EMP-001",
+        },
+    )
+
+    assert response.status_code == 409
+
+    data = response.json()
+
+    assert "already exists" in data["detail"].lower()
+
+
+def test_update_user_partial_update(client):
+    """API should update only the supplied fields."""
+
+    create_response = client.post(
+        "/api/v1/users/",
+        json={
+            "employee_id": "EMP-001",
+            "email": "john@example.com",
+            "full_name": "John Doe",
+        },
+    )
+
+    user_id = create_response.json()["user"]["id"]
+
+    response = client.patch(
+        f"/api/v1/users/{user_id}",
+        json={
+            "full_name": "John Updated",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()["user"]
+
+    assert data["employee_id"] == "EMP-001"
+    assert data["email"] == "john@example.com"
+    assert data["full_name"] == "John Updated"
+    assert data["is_active"] is True
