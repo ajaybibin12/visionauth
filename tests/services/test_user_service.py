@@ -129,11 +129,13 @@ async def test_get_users(db_session):
     repository = UserRepository(db_session)
     service = UserService(repository)
 
-    users = await service.get_users()
+    result = await service.get_users(page=1, page_size=10)
 
-    assert len(users) == 2
-    assert users[0].employee_id == "EMP-001"
-    assert users[1].employee_id == "EMP-002"
+    assert len(result.users) == 2
+    assert result.total == 2
+    assert result.page == 1
+    assert result.page_size == 10
+    assert result.total_pages == 1
 
 
 async def test_update_user(db_session):

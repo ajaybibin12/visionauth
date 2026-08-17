@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Generic, TypeVar
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -39,11 +39,32 @@ class BaseRepository(Generic[ModelType]):
 
         return await self.session.get(self.model, obj_id)
 
-    async def list(self) -> list[ModelType]:
+    async def list(
+        self, *, offset: int = 0, limit: int | None = None
+    ) -> list[ModelType]:
         """Return all records."""
 
-        result = await self.session.execute(select(self.model))
+        """Return database records with optional pagination."""
+
+        query = select(self.model)
+
+        if limit is not None:
+            query = query.limit(limit)
+
+        query = query.offset(offset)
+
+        result = await self.session.execute(query)
+
         return list(result.scalars().all())
+
+    async def count(self) -> int:
+        """Return the total number of records."""
+
+        result = await self.session.execute(
+            select(func.count()).select_from(self.model)
+        )
+
+        return result.scalar_one()
 
     async def delete(self, obj: ModelType) -> None:
         """Delete a database record."""

@@ -39,6 +39,10 @@ class UserList(BaseSchema):
     """Schema for listing users."""
 
     users: list[UserRead] = Field(default_factory=list)
+    total: int = Field(ge=0)
+    page: int = Field(ge=1)
+    page_size: int = Field(ge=1)
+    total_pages: int = Field(ge=0)
 
 
 class UserResponse(BaseSchema):

@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.db.dependencies import get_user_service
 from app.exceptions import (
@@ -55,12 +55,24 @@ async def get_user(
 
 @router.get("/", response_model=UserList)
 async def list_users(
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
     user_service: UserService = Depends(get_user_service),  # noqa: B008
 ) -> UserList:
-    """List all users."""
+    """List users with pagination."""
 
-    users = await user_service.get_users()
-    return UserList(users=[UserRead.model_validate(user) for user in users])
+    result = await user_service.get_users(
+        page=page,
+        page_size=page_size,
+    )
+
+    return UserList(
+        users=[UserRead.model_validate(user) for user in result.users],
+        total=result.total,
+        page=result.page,
+        page_size=result.page_size,
+        total_pages=result.total_pages,
+    )
 
 
 @router.patch(

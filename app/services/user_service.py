@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from uuid import UUID
 
 from app.exceptions import (
@@ -10,6 +11,17 @@ from app.exceptions import (
 from app.models.user import User
 from app.repositories.user import UserRepository
 from app.schemas.user import UserCreate, UserUpdate
+
+
+@dataclass
+class PaginatedUsers:
+    """Paginated user results."""
+
+    users: list[User]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
 
 
 class UserService:
@@ -60,10 +72,32 @@ class UserService:
 
         return user
 
-    async def get_users(self) -> list[User]:
-        """List all users."""
+    async def get_users(
+        self,
+        *,
+        page: int,
+        page_size: int,
+    ) -> PaginatedUsers:
+        """List users with pagination."""
 
-        return await self.user_repository.list()
+        offset = (page - 1) * page_size
+
+        users = await self.user_repository.list(
+            offset=offset,
+            limit=page_size,
+        )
+
+        total = await self.user_repository.count()
+
+        total_pages = (total + page_size - 1) // page_size
+
+        return PaginatedUsers(
+            users=users,
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+        )
 
     async def update_user(
         self,
