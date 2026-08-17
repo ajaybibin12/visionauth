@@ -31,3 +31,22 @@ class UserRepository(BaseRepository[User]):
         )
 
         return result.scalar_one_or_none()
+
+    async def list(
+        self,
+        *,
+        offset: int = 0,
+        limit: int | None = None,
+    ) -> list[User]:
+        """Return users with pagination."""
+
+        query = select(User).order_by(User.created_at)
+
+        if limit is not None:
+            query = query.limit(limit)
+
+        query = query.offset(offset)
+
+        result = await self.session.execute(query)
+
+        return list(result.scalars().all())
