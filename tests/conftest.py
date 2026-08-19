@@ -9,7 +9,6 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.core.config import settings
-from app.db.base import Base
 from app.db.session import get_session
 from app.main import app
 from app.models.user import User
@@ -17,7 +16,6 @@ from app.repositories.user import UserRepository
 
 engine = create_async_engine(
     settings.test_database_url,
-    future=True,
     poolclass=NullPool,
 )
 
@@ -42,17 +40,19 @@ app.dependency_overrides[get_session] = override_get_session
 async def setup_database():
     """Reset database state before and after each test."""
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    async with TestingSessionLocal() as session:
+        for table in reversed(User.metadata.sorted_tables):
+            await session.execute(table.delete())
 
-        for table in reversed(Base.metadata.sorted_tables):
-            await conn.execute(table.delete())
+        await session.commit()
 
     yield
 
-    async with engine.begin() as conn:
-        for table in reversed(Base.metadata.sorted_tables):
-            await conn.execute(table.delete())
+    async with TestingSessionLocal() as session:
+        for table in reversed(User.metadata.sorted_tables):
+            await session.execute(table.delete())
+
+        await session.commit()
 
 
 @pytest_asyncio.fixture
@@ -81,6 +81,7 @@ async def user(db_session: AsyncSession) -> User:
         employee_id="EMP001",
         email="test@example.com",
         full_name="Test User",
+        password_hash="test-password-hash",
         is_active=True,
     )
 

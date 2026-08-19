@@ -9,6 +9,7 @@ def test_create_user(client: TestClient):
         "employee_id": "EMP001",
         "email": "john@example.com",
         "full_name": "John Doe",
+        "password": "StrongPassword123!",
     }
 
     response = client.post("/api/v1/users", json=payload)
@@ -34,12 +35,14 @@ def test_create_user_duplicate_email(client: TestClient):
         "employee_id": "EMP001",
         "email": "john@example.com",
         "full_name": "John Doe",
+        "password": "StrongPassword123!",
     }
 
     second = {
         "employee_id": "EMP002",
         "email": "john@example.com",
         "full_name": "Jane Doe",
+        "password": "StrongPassword123!",
     }
 
     client.post("/api/v1/users", json=first)
@@ -56,12 +59,14 @@ def test_create_user_duplicate_employee_id(client: TestClient):
         "employee_id": "EMP001",
         "email": "john@example.com",
         "full_name": "John Doe",
+        "password": "StrongPassword123!",
     }
 
     second = {
         "employee_id": "EMP001",
         "email": "jane@example.com",
         "full_name": "Jane Doe",
+        "password": "StrongPassword123!",
     }
 
     client.post("/api/v1/users", json=first)
@@ -105,6 +110,7 @@ def test_list_users(client):
             "employee_id": "EMP-001",
             "email": "john@example.com",
             "full_name": "John Doe",
+            "password": "StrongPassword123!",
         },
     )
 
@@ -114,6 +120,7 @@ def test_list_users(client):
             "employee_id": "EMP-002",
             "email": "jane@example.com",
             "full_name": "Jane Doe",
+            "password": "StrongPassword123!",
         },
     )
 
@@ -151,6 +158,7 @@ def test_update_user(client):
             "employee_id": "EMP-001",
             "email": "john@example.com",
             "full_name": "John Doe",
+            "password": "StrongPassword123!",
         },
     )
 
@@ -205,6 +213,7 @@ def test_update_user_duplicate_email(client):
             "employee_id": "EMP-001",
             "email": "john@example.com",
             "full_name": "John Doe",
+            "password": "StrongPassword123!",
         },
     )
 
@@ -214,6 +223,7 @@ def test_update_user_duplicate_email(client):
             "employee_id": "EMP-002",
             "email": "jane@example.com",
             "full_name": "Jane Doe",
+            "password": "StrongPassword123!",
         },
     )
 
@@ -244,6 +254,7 @@ def test_update_user_duplicate_employee_id(client):
             "employee_id": "EMP-001",
             "email": "john@example.com",
             "full_name": "John Doe",
+            "password": "StrongPassword123!",
         },
     )
 
@@ -253,6 +264,7 @@ def test_update_user_duplicate_employee_id(client):
             "employee_id": "EMP-002",
             "email": "jane@example.com",
             "full_name": "Jane Doe",
+            "password": "StrongPassword123!",
         },
     )
 
@@ -283,6 +295,7 @@ def test_update_user_partial_update(client):
             "employee_id": "EMP-001",
             "email": "john@example.com",
             "full_name": "John Doe",
+            "password": "StrongPassword123!",
         },
     )
 
@@ -314,6 +327,7 @@ def test_delete_user(client, db_session):
             "employee_id": "EMP-DELETE-001",
             "email": "delete@example.com",
             "full_name": "Delete User",
+            "password": "StrongPassword123!",
         },
     )
 

@@ -2,6 +2,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from app.core.security import hash_password
 from app.exceptions import (
     EmployeeIDAlreadyExistsError,
     UserAlreadyExistsError,
@@ -25,6 +26,7 @@ async def test_create_user(db_session):
             employee_id="EMP-001",
             email="john@example.com",
             full_name="John Doe",
+            password="SecurePassword123!",
         )
     )
 
@@ -32,6 +34,7 @@ async def test_create_user(db_session):
     assert user.employee_id == "EMP-001"
     assert user.full_name == "John Doe"
     assert user.is_active is True
+    assert user.password_hash is not None
 
 
 @pytest.mark.asyncio
@@ -46,6 +49,7 @@ async def test_create_user_duplicate_email(db_session):
             employee_id="EMP-001",
             email="john@example.com",
             full_name="John Doe",
+            password="SecurePassword123!",
         )
     )
 
@@ -55,6 +59,7 @@ async def test_create_user_duplicate_email(db_session):
                 employee_id="EMP-002",
                 email="john@example.com",
                 full_name="Jane Doe",
+                password="SecurePassword123!",
             )
         )
 
@@ -71,6 +76,7 @@ async def test_create_user_duplicate_employee_id(db_session):
             employee_id="EMP-001",
             email="john@example.com",
             full_name="John Doe",
+            password="SecurePassword123!",
         )
     )
 
@@ -80,6 +86,7 @@ async def test_create_user_duplicate_employee_id(db_session):
                 employee_id="EMP-001",
                 email="jane@example.com",
                 full_name="Jane Doe",
+                password="SecurePassword123!",
             )
         )
 
@@ -108,6 +115,7 @@ async def test_get_user_not_found(user_repository):
         await service.get_user(user_id)
 
 
+@pytest.mark.asyncio
 async def test_get_users(db_session):
     """Service should return all users."""
 
@@ -115,12 +123,14 @@ async def test_get_users(db_session):
         employee_id="EMP-001",
         email="john@example.com",
         full_name="John Doe",
+        password_hash=hash_password("SecurePassword123!"),
     )
 
     user_2 = User(
         employee_id="EMP-002",
         email="jane@example.com",
         full_name="Jane Doe",
+        password_hash=hash_password("SecurePassword123!"),
     )
 
     db_session.add_all([user_1, user_2])
@@ -129,7 +139,10 @@ async def test_get_users(db_session):
     repository = UserRepository(db_session)
     service = UserService(repository)
 
-    result = await service.get_users(page=1, page_size=10)
+    result = await service.get_users(
+        page=1,
+        page_size=10,
+    )
 
     assert len(result.users) == 2
     assert result.total == 2
@@ -138,6 +151,7 @@ async def test_get_users(db_session):
     assert result.total_pages == 1
 
 
+@pytest.mark.asyncio
 async def test_update_user(db_session):
     """Service should update an existing user."""
 
@@ -145,6 +159,7 @@ async def test_update_user(db_session):
         employee_id="EMP-001",
         email="john@example.com",
         full_name="John Doe",
+        password_hash=hash_password("SecurePassword123!"),
     )
 
     db_session.add(user)
@@ -170,6 +185,7 @@ async def test_update_user(db_session):
     assert updated_user.is_active is True
 
 
+@pytest.mark.asyncio
 async def test_update_user_not_found(db_session):
     """Service should raise an error when user does not exist."""
 
@@ -185,6 +201,7 @@ async def test_update_user_not_found(db_session):
         )
 
 
+@pytest.mark.asyncio
 async def test_update_user_duplicate_email(db_session):
     """Service should reject an email already used by another user."""
 
@@ -192,18 +209,18 @@ async def test_update_user_duplicate_email(db_session):
         employee_id="EMP-001",
         email="john@example.com",
         full_name="John Doe",
+        password_hash=hash_password("SecurePassword123!"),
     )
 
     user_2 = User(
         employee_id="EMP-002",
         email="jane@example.com",
         full_name="Jane Doe",
+        password_hash=hash_password("SecurePassword123!"),
     )
 
     db_session.add_all([user_1, user_2])
     await db_session.commit()
-    await db_session.refresh(user_1)
-    await db_session.refresh(user_2)
 
     repository = UserRepository(db_session)
     service = UserService(repository)
@@ -215,6 +232,7 @@ async def test_update_user_duplicate_email(db_session):
         )
 
 
+@pytest.mark.asyncio
 async def test_update_user_duplicate_employee_id(db_session):
     """Service should reject an employee ID already used by another user."""
 
@@ -222,18 +240,18 @@ async def test_update_user_duplicate_employee_id(db_session):
         employee_id="EMP-001",
         email="john@example.com",
         full_name="John Doe",
+        password_hash=hash_password("SecurePassword123!"),
     )
 
     user_2 = User(
         employee_id="EMP-002",
         email="jane@example.com",
         full_name="Jane Doe",
+        password_hash=hash_password("SecurePassword123!"),
     )
 
     db_session.add_all([user_1, user_2])
     await db_session.commit()
-    await db_session.refresh(user_1)
-    await db_session.refresh(user_2)
 
     repository = UserRepository(db_session)
     service = UserService(repository)
@@ -245,6 +263,7 @@ async def test_update_user_duplicate_employee_id(db_session):
         )
 
 
+@pytest.mark.asyncio
 async def test_delete_user(db_session):
     """Test deleting an existing user."""
 
@@ -255,6 +274,7 @@ async def test_delete_user(db_session):
         employee_id="EMP-DELETE-001",
         email="delete@example.com",
         full_name="Delete User",
+        password_hash=hash_password("SecurePassword123!"),
     )
 
     created_user = await repository.create(user)
@@ -266,6 +286,7 @@ async def test_delete_user(db_session):
     assert deleted_user is None
 
 
+@pytest.mark.asyncio
 async def test_delete_user_not_found(db_session):
     """Test deleting a user that does not exist."""
 
