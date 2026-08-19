@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from secrets import token_urlsafe
 from uuid import UUID
 
+from app.core.security import hash_password
 from app.exceptions import (
     EmployeeIDAlreadyExistsError,
     UserAlreadyExistsError,
@@ -33,7 +35,6 @@ class UserService:
     async def create_user(self, user_create: UserCreate) -> User:
         """Create a new user."""
 
-        # Check if the email already exists
         existing_user_by_email = await self.user_repository.get_by_email(
             user_create.email
         )
@@ -43,7 +44,6 @@ class UserService:
                 f"User with email {user_create.email} already exists."
             )
 
-        # Check if the employee ID already exists
         existing_user_by_employee_id = await self.user_repository.get_by_employee_id(
             user_create.employee_id
         )
@@ -53,11 +53,16 @@ class UserService:
                 f"User with employee ID {user_create.employee_id} already exists."
             )
 
-        # Create a new user instance
+        if user_create.password is not None:
+            password_hash = hash_password(user_create.password)
+        else:
+            password_hash = token_urlsafe(32)
+
         new_user = User(
             employee_id=user_create.employee_id,
             email=user_create.email,
             full_name=user_create.full_name,
+            password_hash=password_hash,
         )
 
         return await self.user_repository.create(new_user)
