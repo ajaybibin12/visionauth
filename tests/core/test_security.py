@@ -1,4 +1,11 @@
-from app.core.security import hash_password, verify_password
+import jwt
+
+from app.core.config import settings
+from app.core.security import (
+    create_access_token,
+    hash_password,
+    verify_password,
+)
 
 
 def test_hash_password() -> None:
@@ -44,3 +51,28 @@ def test_same_password_produces_different_hashes() -> None:
 
     assert verify_password(password, hash_one) is True
     assert verify_password(password, hash_two) is True
+
+
+def test_create_access_token() -> None:
+    """Access token creation should return a valid JWT."""
+
+    token = create_access_token("test-user-123")
+
+    assert isinstance(token, str)
+    assert token.count(".") == 2
+
+
+def test_create_access_token_contains_subject() -> None:
+    """Access token should contain the user subject."""
+
+    token = create_access_token("test-user-123")
+
+    payload = jwt.decode(
+        token,
+        settings.jwt_secret_key,
+        algorithms=[settings.jwt_algorithm],
+    )
+
+    assert payload["sub"] == "test-user-123"
+    assert "iat" in payload
+    assert "exp" in payload

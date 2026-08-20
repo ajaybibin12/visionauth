@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from secrets import token_urlsafe
 from uuid import UUID
 
 from app.core.security import hash_password
@@ -53,10 +52,7 @@ class UserService:
                 f"User with employee ID {user_create.employee_id} already exists."
             )
 
-        if user_create.password is not None:
-            password_hash = hash_password(user_create.password)
-        else:
-            password_hash = token_urlsafe(32)
+        password_hash = hash_password(user_create.password)
 
         new_user = User(
             employee_id=user_create.employee_id,

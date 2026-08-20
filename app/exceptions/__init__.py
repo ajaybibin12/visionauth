@@ -1,3 +1,4 @@
+from app.exceptions.auth import AuthenticationError
 from app.exceptions.user import (
     EmployeeIDAlreadyExistsError,
     UserAlreadyExistsError,
@@ -10,4 +11,5 @@ __all__ = [
     "UserAlreadyExistsError",
     "UserError",
     "UserNotFoundError",
+    "AuthenticationError",
 ]
