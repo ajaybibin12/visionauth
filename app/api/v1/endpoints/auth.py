@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.security import create_access_token
-from app.db.dependencies import get_auth_service
+from app.db.dependencies import get_auth_service, get_current_user
 from app.exceptions.auth import AuthenticationError
+from app.models.user import User
 from app.schemas.auth import LoginRequest, TokenResponse
+from app.schemas.user import UserRead, UserResponse
 from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -36,4 +38,18 @@ async def login(
     return TokenResponse(
         access_token=access_token,
         token_type="Bearer",
+    )
+
+
+@router.get(
+    "/me",
+    response_model=UserResponse,
+)
+async def get_current_user_profile(
+    current_user: User = Depends(get_current_user),  # noqa: B008
+) -> UserResponse:
+    """Return the currently authenticated user's profile."""
+
+    return UserResponse(
+        user=UserRead.model_validate(current_user),
     )

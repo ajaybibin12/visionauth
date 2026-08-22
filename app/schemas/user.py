@@ -4,6 +4,7 @@ import re
 
 from pydantic import EmailStr, Field, field_validator
 
+from app.models.enums import UserRole
 from app.schemas.common import BaseSchema, TimestampedSchema
 
 
@@ -68,6 +69,7 @@ class UserRead(TimestampedSchema):
     email: EmailStr
     full_name: str
     is_active: bool
+    role: UserRole
 
 
 class UserList(BaseSchema):
