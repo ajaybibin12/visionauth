@@ -9,8 +9,10 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.core.config import settings
+from app.core.security import hash_password
 from app.db.session import get_session
 from app.main import app
+from app.models.enums import UserRole
 from app.models.user import User
 from app.repositories.user import UserRepository
 
@@ -81,8 +83,29 @@ async def user(db_session: AsyncSession) -> User:
         employee_id="EMP001",
         email="test@example.com",
         full_name="Test User",
-        password_hash="test-password-hash",
+        password_hash=hash_password("StrongPassword123!"),
         is_active=True,
+        role=UserRole.USER,
+    )
+
+    db_session.add(test_user)
+    await db_session.commit()
+    await db_session.refresh(test_user)
+
+    return test_user
+
+
+@pytest_asyncio.fixture
+async def admin_user(db_session: AsyncSession) -> User:
+    """Create and return an admin test user."""
+
+    test_user = User(
+        employee_id="ADMIN001",
+        email="admin@example.com",
+        full_name="Admin User",
+        password_hash=hash_password("StrongPassword123!"),
+        is_active=True,
+        role=UserRole.ADMIN,
     )
 
     db_session.add(test_user)

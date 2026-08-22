@@ -2,12 +2,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.api.authorization import require_admin
 from app.db.dependencies import get_user_service
 from app.exceptions import (
     EmployeeIDAlreadyExistsError,
     UserAlreadyExistsError,
     UserNotFoundError,
 )
+from app.models.user import User
 from app.schemas.user import UserCreate, UserList, UserRead, UserResponse, UserUpdate
 from app.services.user_service import UserService
 
@@ -58,6 +60,7 @@ async def list_users(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
     user_service: UserService = Depends(get_user_service),  # noqa: B008
+    current_user: User = Depends(require_admin),  # noqa: B008
 ) -> UserList:
     """List users with pagination."""
 
@@ -84,6 +87,7 @@ async def update_user(
     user_id: UUID,
     user_update: UserUpdate,
     user_service: UserService = Depends(get_user_service),  # noqa: B008
+    current_user: User = Depends(require_admin),  # noqa: B008
 ) -> UserResponse:
     """Update a user by ID."""
 
@@ -118,6 +122,7 @@ async def update_user(
 async def delete_user(
     user_id: UUID,
     user_service: UserService = Depends(get_user_service),  # noqa: B008
+    current_user: User = Depends(require_admin),  # noqa: B008
 ) -> None:
     """Delete a user by ID."""
 
