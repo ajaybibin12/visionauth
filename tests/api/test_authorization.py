@@ -220,3 +220,68 @@ def test_normal_user_cannot_update_user(
     )
 
     assert response.status_code == 403
+
+
+def test_get_current_user_without_token(
+    client: TestClient,
+) -> None:
+    """Unauthenticated request should return 401."""
+
+    response = client.get("/api/v1/auth/me")
+
+    assert response.status_code == 401
+
+
+def test_get_current_user_with_invalid_token(
+    client: TestClient,
+) -> None:
+    """Invalid JWT should return 401."""
+
+    response = client.get(
+        "/api/v1/auth/me",
+        headers={
+            "Authorization": "Bearer invalid-token",
+        },
+    )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid or expired access token."
+
+
+def test_get_current_user_with_malformed_token(
+    client: TestClient,
+) -> None:
+    """Malformed JWT should return 401."""
+
+    response = client.get(
+        "/api/v1/auth/me",
+        headers={
+            "Authorization": "Bearer abc.def.ghi",
+        },
+    )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid or expired access token."
+
+
+def test_get_current_user_with_nonexistent_user(
+    client: TestClient,
+    admin_user: User,
+) -> None:
+    """Token for a deleted user should not authenticate."""
+
+    from app.core.security import create_access_token
+
+    token = create_access_token(
+        subject="00000000-0000-0000-0000-000000000000",
+    )
+
+    response = client.get(
+        "/api/v1/auth/me",
+        headers={
+            "Authorization": f"Bearer {token}",
+        },
+    )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid access token."
