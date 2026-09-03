@@ -4,6 +4,7 @@ import jwt
 from pwdlib import PasswordHash
 
 from app.core.config import settings
+from app.schemas.token import AccessTokenPayload
 
 password_hash = PasswordHash.recommended()
 
@@ -34,6 +35,7 @@ def create_access_token(subject: str) -> str:
         "sub": subject,
         "iat": now,
         "exp": expire,
+        "type": "access",
     }
 
     return jwt.encode(
@@ -43,11 +45,18 @@ def create_access_token(subject: str) -> str:
     )
 
 
-def decode_access_token(token: str) -> dict:
+def decode_access_token(token: str) -> AccessTokenPayload:
     """Decode a JWT access token and return its payload."""
 
-    return jwt.decode(
+    payload = jwt.decode(
         token,
         settings.jwt_secret_key,
         algorithms=[settings.jwt_algorithm],
     )
+
+    token_payload = AccessTokenPayload.model_validate(payload)
+
+    if token_payload.type != "access":
+        raise jwt.InvalidTokenError("Invalid token type.")
+
+    return token_payload

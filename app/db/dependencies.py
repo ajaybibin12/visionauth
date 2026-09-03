@@ -53,7 +53,7 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
 
-    subject = payload.get("sub")
+    subject = payload.sub
 
     if subject is None:
         raise HTTPException(
