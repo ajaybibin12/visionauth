@@ -1,14 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.security import create_access_token
-from app.db.dependencies import get_auth_service, get_current_user
+from app.db.dependencies import (
+    get_auth_service,
+    get_current_user,
+    get_refresh_token_service,
+)
 from app.exceptions.auth import AuthenticationError
 from app.models.user import User
 from app.schemas.auth import LoginRequest, TokenResponse
 from app.schemas.user import UserRead, UserResponse
 from app.services.auth_service import AuthService
+from app.services.refresh_token_service import RefreshTokenService
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(
+    prefix="/auth",
+    tags=["Authentication"],
+)
 
 
 @router.post(
@@ -19,8 +27,11 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 async def login(
     login_request: LoginRequest,
     auth_service: AuthService = Depends(get_auth_service),  # noqa: B008
+    refresh_token_service: RefreshTokenService = Depends(  # noqa: B008
+        get_refresh_token_service
+    ),
 ) -> TokenResponse:
-    """Authenticate a user and return an access token."""
+    """Authenticate a user and return access and refresh tokens."""
 
     try:
         user = await auth_service.authenticate_user(
@@ -33,10 +44,17 @@ async def login(
             detail="Invalid email or password.",
         ) from exc
 
-    access_token = create_access_token(subject=str(user.id))
+    access_token = create_access_token(
+        subject=str(user.id),
+    )
+
+    refresh_token = await refresh_token_service.create_refresh_token(
+        user_id=user.id,
+    )
 
     return TokenResponse(
         access_token=access_token,
+        refresh_token=refresh_token,
         token_type="Bearer",
     )
 

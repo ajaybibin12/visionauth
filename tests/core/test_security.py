@@ -6,14 +6,12 @@ import pytest
 from app.core.config import settings
 from app.core.security import (
     create_access_token,
+    create_refresh_token,
     decode_access_token,
+    decode_refresh_token,
     hash_password,
     verify_password,
 )
-
-# ============================================================
-# Password hashing
-# ============================================================
 
 
 def test_hash_password() -> None:
@@ -175,3 +173,45 @@ def test_decode_access_token_rejects_expired_token() -> None:
 
     with pytest.raises(jwt.PyJWTError):
         decode_access_token(token)
+
+
+def test_create_refresh_token() -> None:
+    """Refresh token should contain the correct claims."""
+    user_id = "12345678-1234-1234-1234-123456789012"
+    token = create_refresh_token(user_id)
+    payload = jwt.decode(
+        token,
+        settings.jwt_secret_key,
+        algorithms=[settings.jwt_algorithm],
+    )
+    assert payload["sub"] == user_id
+    assert payload["type"] == "refresh"
+    assert "iat" in payload
+    assert "exp" in payload
+
+
+def test_access_token_cannot_be_used_as_refresh_token() -> None:
+    """Access tokens must not be accepted as refresh tokens."""
+    token = create_access_token("user-123")
+    with pytest.raises(jwt.InvalidTokenError):
+        decode_refresh_token(token)
+
+
+def test_decode_refresh_token() -> None:
+    """Valid refresh token should decode successfully."""
+    token = create_refresh_token("user-123")
+    payload = decode_refresh_token(token)
+    assert payload["sub"] == "user-123"
+    assert payload["type"] == "refresh"
+
+
+def test_invalid_access_token() -> None:
+    """Invalid access token should be rejected."""
+    with pytest.raises(jwt.PyJWTError):
+        decode_access_token("invalid-token")
+
+
+def test_invalid_refresh_token() -> None:
+    """Invalid refresh token should be rejected."""
+    with pytest.raises(jwt.PyJWTError):
+        decode_refresh_token("invalid-token")

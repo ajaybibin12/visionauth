@@ -15,7 +15,10 @@ def test_login_request_schema() -> None:
 def test_token_response_schema() -> None:
     """Test valid token response schema."""
 
-    token_response = TokenResponse(access_token="test-access-token")
+    token_response = TokenResponse(
+        access_token="test-access-token", refresh_token="test-refresh-token"
+    )
 
     assert token_response.access_token == "test-access-token"
+    assert token_response.refresh_token == "test-refresh-token"
     assert token_response.token_type == "Bearer"

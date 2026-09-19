@@ -40,6 +40,8 @@ async def test_login_success(
 
     assert "access_token" in data
     assert data["access_token"]
+    assert "refresh_token" in data
+    assert data["refresh_token"]
     assert data["token_type"] == "Bearer"
 
 
