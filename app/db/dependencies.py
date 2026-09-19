@@ -11,8 +11,10 @@ from app.core.security import decode_access_token
 from app.db.session import get_session
 from app.exceptions import UserNotFoundError
 from app.models.user import User
+from app.repositories.refresh_token import RefreshTokenRepository
 from app.repositories.user import UserRepository
 from app.services.auth_service import AuthService
+from app.services.refresh_token_service import RefreshTokenService
 from app.services.user_service import UserService
 
 bearer_scheme = HTTPBearer()
@@ -79,3 +81,13 @@ async def get_current_user(
             detail="Invalid access token.",
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
+
+
+async def get_refresh_token_service(
+    session: AsyncSession = Depends(get_session),  # noqa: B008
+) -> RefreshTokenService:
+    """Return a refresh token service instance."""
+
+    repository = RefreshTokenRepository(session)
+
+    return RefreshTokenService(repository)
