@@ -8,6 +8,19 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class LogoutRequest(BaseModel):
+    """Schema for logout request."""
+
+    refresh_token: str
+
+
+class ChangePasswordRequest(BaseModel):
+    """Schema for changing a password."""
+
+    current_password: str
+    new_password: str
+
+
 class TokenResponse(BaseModel):
     """Schema for token response."""
 

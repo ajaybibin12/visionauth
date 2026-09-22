@@ -12,9 +12,11 @@ from app.db.session import get_session
 from app.exceptions import UserNotFoundError
 from app.models.user import User
 from app.repositories.refresh_token import RefreshTokenRepository
+from app.repositories.session import SessionRepository
 from app.repositories.user import UserRepository
 from app.services.auth_service import AuthService
 from app.services.refresh_token_service import RefreshTokenService
+from app.services.session_service import SessionService
 from app.services.user_service import UserService
 
 bearer_scheme = HTTPBearer()
@@ -91,3 +93,13 @@ async def get_refresh_token_service(
     repository = RefreshTokenRepository(session)
 
     return RefreshTokenService(repository)
+
+
+async def get_session_service(
+    session: AsyncSession = Depends(get_session),  # noqa: B008
+) -> SessionService:
+    """Return a session service instance."""
+
+    repository = SessionRepository(session)
+
+    return SessionService(repository)
